@@ -9,11 +9,12 @@ import {
   Alert,
   ScrollView,
   useColorScheme,
-  AppState, // Added this import
+  AppState,
 } from 'react-native';
 import { Svg, Path } from 'react-native-svg';
 import { Stack } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
+import ViewShot from 'react-native-view-shot';
 
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
@@ -49,6 +50,7 @@ export default function HomeScreen() {
   const pointsRef = useRef([]);
   const [path, setPath] = useState('');
   const [scrollEnabled, setScrollEnabled] = useState(true);
+  const viewShotRef = useRef(null);
 
   const colorScheme = useColorScheme();
   const inputStyle = [
@@ -57,14 +59,15 @@ export default function HomeScreen() {
     { backgroundColor: colorScheme === 'dark' ? '#333' : '#fff' },
   ];
 
-  const { generateImageWithHuggingFace, pickImage } = useImageManipulation({
-    image,
-    setImage,
-    setGeneratedImage,
-    setIsLoading,
-    setError,
-    setBlendingComplete,
-  });
+  const { generateImageWithHuggingFace, pickImage, saveImageOnDevice } =
+    useImageManipulation({
+      image,
+      setImage,
+      setGeneratedImage,
+      setIsLoading,
+      setError,
+      setBlendingComplete,
+    });
 
   const { panResponder } = usePanResponder({
     pointsRef,
@@ -121,57 +124,57 @@ export default function HomeScreen() {
         scrollEnabled={scrollEnabled}
       >
         <View style={styles.content}>
-          <ThemedView style={styles.canvasContainer}>
-            <ThemedView style={styles.canvas} {...panResponder.panHandlers}>
-              {image && (
-                <>
-                  <Image source={{ uri: image }} style={styles.image} />
-                  <Svg height="100%" width="100%" style={styles.absoluteFill}>
-                    {enclosingShape && !generatedImage && (
-                      <Path
-                        d={enclosingShape}
-                        fill="#00ff00"
-                        fillOpacity={1}
-                        stroke="white"
-                        strokeWidth="2"
+          <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.8 }}>
+            <ThemedView style={styles.canvasContainer}>
+              <ThemedView style={styles.canvas} {...panResponder.panHandlers}>
+                {image && (
+                  <>
+                    <Image source={{ uri: image }} style={styles.image} />
+                    <Svg height="100%" width="100%" style={styles.absoluteFill}>
+                      {enclosingShape && !generatedImage && (
+                        <Path
+                          d={enclosingShape}
+                          fill="#00ff00"
+                          fillOpacity={1}
+                        />
+                      )}
+                    </Svg>
+                    {generatedImage && (
+                      <Image
+                        source={{ uri: generatedImage }}
+                        style={{
+                          position: 'absolute',
+                          width: '100%',
+                          height: '100%',
+                          resizeMode: 'contain',
+                        }}
                       />
                     )}
-                  </Svg>
-                  {generatedImage && (
-                    <Image
-                      source={{ uri: generatedImage }}
-                      style={{
-                        position: 'absolute',
-                        width: '100%',
-                        height: '100%',
-                        resizeMode: 'contain',
-                      }}
-                    />
-                  )}
-                  {isLoading && (
-                    <View style={styles.loadingOverlay}>
-                      <ActivityIndicator size="large" color="#0a7ea4" />
-                    </View>
-                  )}
-                </>
-              )}
-              {!image && (
-                <TouchableOpacity
-                  style={styles.pickImageButton}
-                  onPress={pickImage}
-                >
-                  <ThemedText style={styles.pickImageText}>
-                    Pick an image
-                  </ThemedText>
-                </TouchableOpacity>
-              )}
+                    {isLoading && (
+                      <View style={styles.loadingOverlay}>
+                        <ActivityIndicator size="large" color="#0a7ea4" />
+                      </View>
+                    )}
+                  </>
+                )}
+                {!image && (
+                  <TouchableOpacity
+                    style={styles.pickImageButton}
+                    onPress={pickImage}
+                  >
+                    <ThemedText style={styles.pickImageText}>
+                      Pick an image
+                    </ThemedText>
+                  </TouchableOpacity>
+                )}
+              </ThemedView>
             </ThemedView>
-            {enclosingShape && !generatedImage && (
-              <TouchableOpacity style={styles.undoButton} onPress={handleUndo}>
-                <ThemedText style={styles.undoButtonText}>Undo</ThemedText>
-              </TouchableOpacity>
-            )}
-          </ThemedView>
+          </ViewShot>
+          {enclosingShape && !generatedImage && (
+            <TouchableOpacity style={styles.undoButton} onPress={handleUndo}>
+              <ThemedText style={styles.undoButtonText}>Undo</ThemedText>
+            </TouchableOpacity>
+          )}
           {blendingComplete && (
             <ThemedText style={styles.successText}>
               Blending complete! The result should be visible in the image
@@ -198,6 +201,31 @@ export default function HomeScreen() {
             >
               <ThemedText style={styles.generateButtonText}>
                 {isLoading ? 'Generating...' : 'Generate AI Content'}
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.saveButton}
+              onPress={async () => {
+                if (image && enclosingShape) {
+                  try {
+                    const uri = await viewShotRef.current.capture();
+                    const success = await saveImageOnDevice(uri);
+                    if (success) {
+                      Alert.alert('Success', 'Image saved successfully');
+                    }
+                  } catch (error) {
+                    console.error('Error capturing image:', error);
+                    setError('Failed to capture image');
+                  }
+                } else if (!image) {
+                  setError('No image to save');
+                } else {
+                  setError('No enclosing shape drawn');
+                }
+              }}
+            >
+              <ThemedText style={styles.saveButtonText}>
+                Save Image with Shape
               </ThemedText>
             </TouchableOpacity>
           </ThemedView>

@@ -5,6 +5,18 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  saveButton: {
+    backgroundColor: '#0a7ea4',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   scrollContent: {
     flexGrow: 1,
   },
