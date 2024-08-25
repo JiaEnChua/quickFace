@@ -199,7 +199,7 @@ export default function HomeScreen() {
               disabled={isLoading || !image}
             >
               <ThemedText style={styles.generateButtonText}>
-                {isLoading ? 'Processing...' : 'Swap Face'}
+                {isLoading ? 'Processing...' : 'Auto detection swap'}
               </ThemedText>
             </TouchableOpacity>
             <TouchableOpacity
