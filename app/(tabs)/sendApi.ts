@@ -1,7 +1,10 @@
 import { Alert, Image } from 'react-native';
 import Constants from 'expo-constants';
 
-export const sendFaceSwapRequest = async (viewShotRef: any) => {
+export const sendFaceSwapRequest = async (
+  viewShotRef: any,
+  noGreenMask: boolean
+) => {
   try {
     const capturedUri = await viewShotRef.current.capture();
     console.log('Image captured:', capturedUri);
@@ -17,6 +20,7 @@ export const sendFaceSwapRequest = async (viewShotRef: any) => {
       name: 'input_image.png',
       type: 'image/png',
     });
+    formData.append('noGreenMask', noGreenMask.toString());
 
     const apiUrl = Constants.expoConfig?.extra?.apiUrl;
     if (!apiUrl) throw new Error('API_URL is not defined in app config');

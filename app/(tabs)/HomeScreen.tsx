@@ -94,10 +94,14 @@ export default function HomeScreen() {
   };
 
   const handleFaceSwap = async () => {
-    if (image && enclosingShape) {
+    if (image) {
       setIsLoading(true);
       try {
-        const faceSwappedImageUrl = await sendFaceSwapRequest(viewShotRef);
+        const noGreenMask = !enclosingShape; // Set to true if there's no enclosing shape
+        const faceSwappedImageUrl = await sendFaceSwapRequest(
+          viewShotRef,
+          noGreenMask
+        );
         if (faceSwappedImageUrl) {
           setGeneratedImage(faceSwappedImageUrl);
           setBlendingComplete(true);
@@ -111,10 +115,8 @@ export default function HomeScreen() {
       } finally {
         setIsLoading(false);
       }
-    } else if (!image) {
-      setError('No image to process');
     } else {
-      setError('No enclosing shape drawn');
+      setError('No image to process');
     }
   };
 
@@ -184,7 +186,7 @@ export default function HomeScreen() {
             <TouchableOpacity
               style={styles.generateButton}
               onPress={handleFaceSwap}
-              disabled={isLoading || !image || !enclosingShape}
+              disabled={isLoading || !image}
             >
               <ThemedText style={styles.generateButtonText}>
                 {isLoading ? 'Processing...' : 'Swap Face'}
