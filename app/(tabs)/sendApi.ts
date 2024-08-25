@@ -1,4 +1,5 @@
-import { Alert, Image, Platform } from 'react-native';
+import { Alert, Image } from 'react-native';
+import Constants from 'expo-constants';
 
 export const sendFaceSwapRequest = async (viewShotRef: any) => {
   try {
@@ -25,8 +26,8 @@ export const sendFaceSwapRequest = async (viewShotRef: any) => {
       type: 'image/jpeg',
     });
 
-    const apiUrl = process.env.API_URL;
-    if (!apiUrl) throw new Error('API_URL is not defined');
+    const apiUrl = Constants.expoConfig?.extra?.apiUrl;
+    if (!apiUrl) throw new Error('API_URL is not defined in app config');
 
     const response = await fetch(apiUrl, {
       method: 'POST',
