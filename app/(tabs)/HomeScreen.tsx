@@ -18,6 +18,7 @@ import ViewShot from 'react-native-view-shot';
 
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
+import { sendFaceSwapRequest } from './sendApi';
 import { useImageManipulation } from './useImageManipulation';
 import { usePanResponder } from './usePanResponder';
 import { styles } from './styles';
@@ -208,10 +209,14 @@ export default function HomeScreen() {
               onPress={async () => {
                 if (image && enclosingShape) {
                   try {
-                    const uri = await viewShotRef.current.capture();
-                    const success = await saveImageOnDevice(uri);
-                    if (success) {
-                      Alert.alert('Success', 'Image saved successfully');
+                    const faceSwappedImageUrl = await sendFaceSwapRequest(
+                      viewShotRef
+                    );
+                    if (faceSwappedImageUrl) {
+                      setGeneratedImage(faceSwappedImageUrl);
+                      setBlendingComplete(true);
+                    } else {
+                      setError('Failed to generate face-swapped image');
                     }
                   } catch (error) {
                     console.error('Error capturing image:', error);

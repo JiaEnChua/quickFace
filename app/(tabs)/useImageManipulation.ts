@@ -2,7 +2,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { Image } from 'react-native';
-import elonImage from '../../assets/elon.png';
+import faceImage from '../../assets/face_image.jpg';
 
 export const useImageManipulation = ({
   image,
@@ -22,14 +22,14 @@ export const useImageManipulation = ({
       // TODO: Replace this with actual Hugging Face API call
       // console.log('Generating image with Hugging Face API');
 
-      const generatedImageUri = Image.resolveAssetSource(elonImage).uri;
+      const generatedImageUri = Image.resolveAssetSource(faceImage).uri;
 
       if (!generatedImageUri) {
         throw new Error('Failed to generate image');
       }
 
       //save image on device
-      saveImageOnDevice(generatedImageUri, enclosingShape);
+      saveImageOnDevice(generatedImageUri);
     } catch (error) {
       console.error('Error generating image:', error);
       if (error instanceof Error) {
