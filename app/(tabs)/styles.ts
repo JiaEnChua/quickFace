@@ -143,4 +143,8 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
+  resetButton: {
+    backgroundColor: '#d9534f', // A red color for the reset button
+    marginTop: 10,
+  },
 });

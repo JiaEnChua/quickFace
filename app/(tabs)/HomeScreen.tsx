@@ -120,6 +120,16 @@ export default function HomeScreen() {
     }
   };
 
+  const resetApp = () => {
+    setImage(null);
+    setEnclosingShape('');
+    setGeneratedImage(null);
+    setIsLoading(false);
+    setError(null);
+    setBlendingComplete(false);
+    pointsRef.current = [];
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -191,6 +201,12 @@ export default function HomeScreen() {
               <ThemedText style={styles.generateButtonText}>
                 {isLoading ? 'Processing...' : 'Swap Face'}
               </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.generateButton, styles.resetButton]}
+              onPress={resetApp}
+            >
+              <ThemedText style={styles.generateButtonText}>Reset</ThemedText>
             </TouchableOpacity>
           </ThemedView>
         </View>
