@@ -56,7 +56,13 @@ export const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-    resizeMode: 'contain',
+    resizeMode: 'cover',
+  },
+  generatedImage: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   promptContainer: {
     width: '100%',

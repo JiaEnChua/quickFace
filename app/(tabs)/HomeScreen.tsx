@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Image,
-  TextInput,
   TouchableOpacity,
   SafeAreaView,
   View,
@@ -41,39 +40,28 @@ async function cleanupTemporaryFiles() {
 
 export default function HomeScreen() {
   const [image, setImage] = useState(null);
-  const [prompt, setPrompt] = useState('');
   const [enclosingShape, setEnclosingShape] = useState('');
-  const [isDrawing, setIsDrawing] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [blendingComplete, setBlendingComplete] = useState(false);
   const pointsRef = useRef([]);
-  const [path, setPath] = useState('');
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const viewShotRef = useRef(null);
 
-  const colorScheme = useColorScheme();
-  const inputStyle = [
-    styles.input,
-    { color: colorScheme === 'dark' ? '#fff' : '#000' },
-    { backgroundColor: colorScheme === 'dark' ? '#333' : '#fff' },
-  ];
-
-  const { generateImageWithHuggingFace, pickImage, saveImageOnDevice } =
-    useImageManipulation({
-      image,
-      setImage,
-      setGeneratedImage,
-      setIsLoading,
-      setError,
-      setBlendingComplete,
-    });
+  const { pickImage } = useImageManipulation({
+    image,
+    setImage,
+    setGeneratedImage,
+    setIsLoading,
+    setError,
+    setBlendingComplete,
+  });
 
   const { panResponder } = usePanResponder({
     pointsRef,
-    setPath,
-    setIsDrawing,
+    setPath: () => {}, // We don't need this anymore
+    setIsDrawing: () => {}, // We don't need this anymore
     setEnclosingShape,
     setScrollEnabled,
   });
@@ -99,22 +87,35 @@ export default function HomeScreen() {
     }
   }, [blendingComplete, generatedImage]);
 
-  const generateAIContent = async () => {
-    if (!prompt) {
-      Alert.alert('Error', 'Please enter a prompt.');
-      return;
-    }
-    if (!enclosingShape) {
-      Alert.alert('Error', 'Please draw an area on the image.');
-      return;
-    }
-    await generateImageWithHuggingFace(prompt, enclosingShape);
-  };
-
-  const handleUndo = () => {
+  const clearCanvas = () => {
     setEnclosingShape('');
     setGeneratedImage(null);
     pointsRef.current = [];
+  };
+
+  const handleFaceSwap = async () => {
+    if (image && enclosingShape) {
+      setIsLoading(true);
+      try {
+        const faceSwappedImageUrl = await sendFaceSwapRequest(viewShotRef);
+        if (faceSwappedImageUrl) {
+          setGeneratedImage(faceSwappedImageUrl);
+          setBlendingComplete(true);
+          setEnclosingShape(''); // Clear the enclosing shape
+        } else {
+          setError('Failed to generate face-swapped image');
+        }
+      } catch (error) {
+        console.error('Error capturing image:', error);
+        setError('Failed to capture image');
+      } finally {
+        setIsLoading(false);
+      }
+    } else if (!image) {
+      setError('No image to process');
+    } else {
+      setError('No enclosing shape drawn');
+    }
   };
 
   return (
@@ -128,37 +129,32 @@ export default function HomeScreen() {
           <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.8 }}>
             <ThemedView style={styles.canvasContainer}>
               <ThemedView style={styles.canvas} {...panResponder.panHandlers}>
-                {image && (
+                {image && !generatedImage && (
                   <>
                     <Image source={{ uri: image }} style={styles.image} />
                     <Svg height="100%" width="100%" style={styles.absoluteFill}>
-                      {enclosingShape && !generatedImage && (
+                      {enclosingShape && (
                         <Path
                           d={enclosingShape}
                           fill="#00ff00"
-                          fillOpacity={1}
+                          fillOpacity={0.3}
                         />
                       )}
                     </Svg>
-                    {generatedImage && (
-                      <Image
-                        source={{ uri: generatedImage }}
-                        style={{
-                          position: 'absolute',
-                          width: '100%',
-                          height: '100%',
-                          resizeMode: 'contain',
-                        }}
-                      />
-                    )}
-                    {isLoading && (
-                      <View style={styles.loadingOverlay}>
-                        <ActivityIndicator size="large" color="#0a7ea4" />
-                      </View>
-                    )}
                   </>
                 )}
-                {!image && (
+                {generatedImage && (
+                  <Image
+                    source={{ uri: generatedImage }}
+                    style={styles.generatedImage}
+                  />
+                )}
+                {isLoading && (
+                  <View style={styles.loadingOverlay}>
+                    <ActivityIndicator size="large" color="#0a7ea4" />
+                  </View>
+                )}
+                {!image && !generatedImage && (
                   <TouchableOpacity
                     style={styles.pickImageButton}
                     onPress={pickImage}
@@ -172,65 +168,26 @@ export default function HomeScreen() {
             </ThemedView>
           </ViewShot>
           {enclosingShape && !generatedImage && (
-            <TouchableOpacity style={styles.undoButton} onPress={handleUndo}>
-              <ThemedText style={styles.undoButtonText}>Undo</ThemedText>
+            <TouchableOpacity style={styles.undoButton} onPress={clearCanvas}>
+              <ThemedText style={styles.undoButtonText}>Clear</ThemedText>
             </TouchableOpacity>
           )}
           {blendingComplete && (
             <ThemedText style={styles.successText}>
-              Blending complete! The result should be visible in the image
-              above.
+              Face swap complete! The result is visible in the image above.
             </ThemedText>
           )}
           {error && (
             <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
           )}
           <ThemedView style={styles.promptContainer}>
-            <TextInput
-              style={inputStyle}
-              onChangeText={setPrompt}
-              value={prompt}
-              placeholder="Enter your prompt for the selected area"
-              placeholderTextColor={colorScheme === 'dark' ? '#999' : '#666'}
-              multiline={true}
-              numberOfLines={3}
-            />
             <TouchableOpacity
               style={styles.generateButton}
-              onPress={generateAIContent}
-              disabled={isLoading}
+              onPress={handleFaceSwap}
+              disabled={isLoading || !image || !enclosingShape}
             >
               <ThemedText style={styles.generateButtonText}>
-                {isLoading ? 'Generating...' : 'Generate AI Content'}
-              </ThemedText>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={async () => {
-                if (image && enclosingShape) {
-                  try {
-                    const faceSwappedImageUrl = await sendFaceSwapRequest(
-                      viewShotRef
-                    );
-                    if (faceSwappedImageUrl) {
-                      setGeneratedImage(faceSwappedImageUrl);
-                      setBlendingComplete(true);
-                    } else {
-                      setError('Failed to generate face-swapped image');
-                    }
-                  } catch (error) {
-                    console.error('Error capturing image:', error);
-                    setError('Failed to capture image');
-                  }
-                } else if (!image) {
-                  setError('No image to save');
-                } else {
-                  setError('No enclosing shape drawn');
-                }
-              }}
-            >
-              <ThemedText style={styles.saveButtonText}>
-                Save Image with Shape
+                {isLoading ? 'Processing...' : 'Swap Face'}
               </ThemedText>
             </TouchableOpacity>
           </ThemedView>

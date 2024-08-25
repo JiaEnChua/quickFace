@@ -6,24 +6,16 @@ export const sendFaceSwapRequest = async (viewShotRef: any) => {
     const capturedUri = await viewShotRef.current.capture();
     console.log('Image captured:', capturedUri);
 
-    // Get the local file path for the elon.png asset
-    const inputImageUri = Image.resolveAssetSource(
-      require('../../assets/input_image.jpg')
-    ).uri;
-    const faceImageUri = Image.resolveAssetSource(
-      require('../../assets/face_image.jpg')
-    ).uri;
-
     const formData = new FormData();
     formData.append('face_image', {
-      uri: faceImageUri,
+      uri: Image.resolveAssetSource(require('../../assets/face_image.jpg')).uri,
       name: 'face_image.jpg',
       type: 'image/jpeg',
     });
     formData.append('input_image', {
-      uri: inputImageUri,
-      name: 'input_image.jpg',
-      type: 'image/jpeg',
+      uri: capturedUri,
+      name: 'input_image.png',
+      type: 'image/png',
     });
 
     const apiUrl = Constants.expoConfig?.extra?.apiUrl;
