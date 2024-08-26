@@ -14,6 +14,7 @@ import { Svg, Path } from 'react-native-svg';
 import { Stack } from 'expo-router';
 import * as FileSystem from 'expo-file-system';
 import ViewShot from 'react-native-view-shot';
+import * as MediaLibrary from 'expo-media-library';
 
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
@@ -130,6 +131,31 @@ export default function HomeScreen() {
     pointsRef.current = [];
   };
 
+  const saveImage = async () => {
+    if (generatedImage || enclosingShape) {
+      try {
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status === 'granted') {
+          let uriToSave =
+            generatedImage || (await viewShotRef.current.capture());
+          const asset = await MediaLibrary.createAssetAsync(uriToSave);
+          await MediaLibrary.createAlbumAsync('QuickFace', asset, false);
+          Alert.alert('Success', 'Image saved to gallery');
+        } else {
+          Alert.alert(
+            'Permission required',
+            'Please allow access to save photos'
+          );
+        }
+      } catch (error) {
+        console.error('Error saving image:', error);
+        Alert.alert('Error', 'Failed to save image');
+      }
+    } else {
+      Alert.alert('No image', 'There is no edited image or drawing to save');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -194,12 +220,42 @@ export default function HomeScreen() {
           )}
           <ThemedView style={styles.promptContainer}>
             <TouchableOpacity
-              style={styles.generateButton}
+              style={[
+                styles.generateButton,
+                (isLoading || !image) && styles.generateButtonDisabled,
+              ]}
               onPress={handleFaceSwap}
               disabled={isLoading || !image}
             >
-              <ThemedText style={styles.generateButtonText}>
+              <ThemedText
+                style={[
+                  styles.generateButtonText,
+                  (isLoading || !image) && styles.generateButtonTextDisabled,
+                ]}
+              >
                 {isLoading ? 'Processing...' : 'Auto detection swap'}
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.generateButton,
+                styles.saveButton,
+                !generatedImage &&
+                  !enclosingShape &&
+                  styles.generateButtonDisabled,
+              ]}
+              onPress={saveImage}
+              disabled={!generatedImage && !enclosingShape}
+            >
+              <ThemedText
+                style={[
+                  styles.generateButtonText,
+                  !generatedImage &&
+                    !enclosingShape &&
+                    styles.generateButtonTextDisabled,
+                ]}
+              >
+                Save Photo
               </ThemedText>
             </TouchableOpacity>
             <TouchableOpacity

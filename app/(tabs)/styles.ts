@@ -6,10 +6,7 @@ export const styles = StyleSheet.create({
     flex: 1,
   },
   saveButton: {
-    backgroundColor: '#0a7ea4',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
+    backgroundColor: '#28a745', // A green color for the save button
     marginTop: 10,
   },
   saveButtonText: {
@@ -88,10 +85,17 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
+  generateButtonDisabled: {
+    backgroundColor: '#a0a0a0', // A grey color for disabled buttons
+    opacity: 0.5,
+  },
   generateButtonText: {
     color: 'white',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  generateButtonTextDisabled: {
+    color: '#d0d0d0', // A light grey color for disabled button text
   },
   undoButton: {
     position: 'absolute',
@@ -145,6 +149,10 @@ export const styles = StyleSheet.create({
   },
   resetButton: {
     backgroundColor: '#d9534f', // A red color for the reset button
+    marginTop: 10,
+  },
+  saveButton: {
+    backgroundColor: '#28a745', // A green color for the save button
     marginTop: 10,
   },
 });
