@@ -101,7 +101,8 @@ export default function HomeScreen() {
         const noGreenMask = !enclosingShape; // Set to true if there's no enclosing shape
         const faceSwappedImageUrl = await sendFaceSwapRequest(
           viewShotRef,
-          noGreenMask
+          noGreenMask,
+          image // Pass the original image here
         );
         if (faceSwappedImageUrl) {
           setGeneratedImage(faceSwappedImageUrl);

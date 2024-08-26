@@ -3,23 +3,31 @@ import Constants from 'expo-constants';
 
 export const sendFaceSwapRequest = async (
   viewShotRef: any,
-  noGreenMask: boolean
+  noGreenMask: boolean,
+  originalImage: string
 ) => {
   try {
     const capturedUri = await viewShotRef.current.capture();
-    console.log('Image captured:', capturedUri);
 
     const formData = new FormData();
     formData.append('face_image', {
       uri: Image.resolveAssetSource(require('../../assets/face_image.jpg')).uri,
-      name: 'face_image.jpg',
       type: 'image/jpeg',
-    });
+      name: 'face_image.jpg',
+    } as any);
+
     formData.append('input_image', {
       uri: capturedUri,
-      name: 'input_image.png',
       type: 'image/png',
-    });
+      name: 'input_image.png',
+    } as any);
+
+    formData.append('original_input_image', {
+      uri: originalImage,
+      type: 'image/png',
+      name: 'original_input_image.png',
+    } as any);
+
     formData.append('noGreenMask', noGreenMask.toString());
 
     const apiUrl = Constants.expoConfig?.extra?.apiUrl;
@@ -48,7 +56,9 @@ export const sendFaceSwapRequest = async (
     console.error('Error in face swap request:', error);
     Alert.alert(
       'Error',
-      `Failed to process the face swap request: ${error.message}`
+      `Failed to process the face swap request: ${
+        error instanceof Error ? error.message : 'Unknown error'
+      }`
     );
     return null;
   }
