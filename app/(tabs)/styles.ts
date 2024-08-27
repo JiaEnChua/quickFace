@@ -99,7 +99,7 @@ export const styles = StyleSheet.create({
   },
   undoButton: {
     position: 'absolute',
-    bottom: 10,
+    bottom: 20, // Increase this value to move the button higher
     right: 10,
     backgroundColor: 'rgba(244, 67, 54, 0.8)',
     paddingVertical: 8,

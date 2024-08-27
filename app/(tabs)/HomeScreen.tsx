@@ -41,6 +41,7 @@ async function cleanupTemporaryFiles() {
 
 export default function HomeScreen() {
   const [image, setImage] = useState(null);
+  const [originalImage, setOriginalImage] = useState(null);
   const [enclosingShape, setEnclosingShape] = useState('');
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,10 +57,27 @@ export default function HomeScreen() {
     setError,
   });
 
+  const saveOriginalImage = async () => {
+    try {
+      let uriToSave = await viewShotRef.current?.capture();
+      setOriginalImage(uriToSave);
+    } catch (error) {
+      console.error('Error saving original image:', error);
+    }
+  };
+
+  const handlePickImage = async () => {
+    const pickedImageUri = await pickImage();
+    if (pickedImageUri) {
+      // Wait for the image to be rendered in the ViewShot
+      setTimeout(async () => {
+        await saveOriginalImage();
+      }, 100); // Adjust this delay if needed
+    }
+  };
+
   const { panResponder } = usePanResponder({
     pointsRef,
-    setPath: () => {}, // We don't need this anymore
-    setIsDrawing: () => {}, // We don't need this anymore
     setEnclosingShape,
     setScrollEnabled,
   });
@@ -88,6 +106,7 @@ export default function HomeScreen() {
   const clearCanvas = () => {
     setEnclosingShape('');
     setGeneratedImage(null);
+    setOriginalImage(null);
     pointsRef.current = [];
   };
 
@@ -95,16 +114,16 @@ export default function HomeScreen() {
     if (image) {
       setIsLoading(true);
       try {
-        const noGreenMask = !enclosingShape; // Set to true if there's no enclosing shape
+        const noGreenMask = !enclosingShape;
         const faceSwappedImageUrl = await sendFaceSwapRequest(
           viewShotRef,
           noGreenMask,
-          image // Pass the original image here
+          originalImage || ''
         );
         if (faceSwappedImageUrl) {
           setGeneratedImage(faceSwappedImageUrl);
           setBlendingComplete(true);
-          setEnclosingShape(''); // Clear the enclosing shape
+          setEnclosingShape('');
         } else {
           setError('Failed to generate face-swapped image');
         }
@@ -123,6 +142,7 @@ export default function HomeScreen() {
     setImage(null);
     setEnclosingShape('');
     setGeneratedImage(null);
+    setOriginalImage(null);
     setIsLoading(false);
     setError(null);
     setBlendingComplete(false);
@@ -135,7 +155,7 @@ export default function HomeScreen() {
         const { status } = await MediaLibrary.requestPermissionsAsync();
         if (status === 'granted') {
           let uriToSave =
-            generatedImage || (await viewShotRef.current.capture());
+            generatedImage || (await viewShotRef.current?.capture());
           const asset = await MediaLibrary.createAssetAsync(uriToSave);
           await MediaLibrary.createAlbumAsync('QuickFace', asset, false);
           Alert.alert('Success', 'Image saved to gallery');
@@ -193,7 +213,7 @@ export default function HomeScreen() {
                 {!image && !generatedImage && (
                   <TouchableOpacity
                     style={styles.pickImageButton}
-                    onPress={pickImage}
+                    onPress={handlePickImage}
                   >
                     <ThemedText style={styles.pickImageText}>
                       Pick an image
@@ -240,16 +260,18 @@ export default function HomeScreen() {
                 styles.saveButton,
                 !generatedImage &&
                   !enclosingShape &&
+                  !image &&
                   styles.generateButtonDisabled,
               ]}
               onPress={saveImage}
-              disabled={!generatedImage && !enclosingShape}
+              disabled={!generatedImage && !enclosingShape && !image}
             >
               <ThemedText
                 style={[
                   styles.generateButtonText,
                   !generatedImage &&
                     !enclosingShape &&
+                    !image &&
                     styles.generateButtonTextDisabled,
                 ]}
               >
