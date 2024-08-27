@@ -4,14 +4,7 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { Image } from 'react-native';
 import faceImage from '../../assets/face_image.jpg';
 
-export const useImageManipulation = ({
-  image,
-  setImage,
-  setGeneratedImage,
-  setIsLoading,
-  setError,
-  setBlendingComplete,
-}) => {
+export const useImageManipulation = ({ setImage, setIsLoading, setError }) => {
   const generateImageWithHuggingFace = async (
     prompt: string,
     enclosingShape: string

@@ -51,12 +51,9 @@ export default function HomeScreen() {
   const viewShotRef = useRef(null);
 
   const { pickImage } = useImageManipulation({
-    image,
     setImage,
-    setGeneratedImage,
     setIsLoading,
     setError,
-    setBlendingComplete,
   });
 
   const { panResponder } = usePanResponder({
