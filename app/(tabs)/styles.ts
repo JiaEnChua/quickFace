@@ -55,12 +55,6 @@ export const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  generatedImage: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
   promptContainer: {
     width: '100%',
     maxWidth: 400,
@@ -98,9 +92,6 @@ export const styles = StyleSheet.create({
     color: '#d0d0d0', // A light grey color for disabled button text
   },
   undoButton: {
-    position: 'absolute',
-    bottom: 20, // Increase this value to move the button higher
-    right: 10,
     backgroundColor: 'rgba(244, 67, 54, 0.8)',
     paddingVertical: 8,
     paddingHorizontal: 15,
@@ -121,11 +112,6 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  errorText: {
-    color: 'red',
-    marginBottom: 10,
-    textAlign: 'center',
-  },
   absoluteFill: {
     position: 'absolute',
     top: 0,
@@ -141,18 +127,26 @@ export const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: '#00ff00', // Bright green color
   },
-  successText: {
-    color: 'green',
-    marginBottom: 10,
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
   resetButton: {
     backgroundColor: '#d9534f', // A red color for the reset button
     marginTop: 10,
   },
-  saveButton: {
-    backgroundColor: '#28a745', // A green color for the save button
-    marginTop: 10,
+  clearButtonContainer: {
+    height: 40, // Fixed height for consistent spacing
+    marginBottom: 10, // Space between this container and the next element
+    flexDirection: 'row',
+    justifyContent: 'flex-end', // Align content to the right
+    width: CANVAS_SIZE, // Match canvas width for alignment
+  },
+  clearButton: {
+    backgroundColor: '#dc3545', // A red color for the clear button
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+  },
+  clearButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

@@ -5,24 +5,21 @@ import {
   SafeAreaView,
   View,
   ActivityIndicator,
-  Alert,
   ScrollView,
-  useColorScheme,
   AppState,
 } from 'react-native';
 import { Svg, Path } from 'react-native-svg';
 import { Stack } from 'expo-router';
-import * as FileSystem from 'expo-file-system';
 import ViewShot from 'react-native-view-shot';
-import * as MediaLibrary from 'expo-media-library';
 
+import { SwapResultAnnouncement } from '@/components/SwapResultAnnouncement';
+import { saveImage, cleanupTemporaryFiles } from '@/utils';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { sendFaceSwapRequest } from './sendApi';
 import { useImageManipulation } from './useImageManipulation';
 import { usePanResponder } from './usePanResponder';
 import { styles } from './styles';
-import { saveImage, cleanupTemporaryFiles } from '@/utils';
 
 export default function HomeScreen() {
   const [image, setImage] = useState(null);
@@ -34,7 +31,6 @@ export default function HomeScreen() {
   const [blendingComplete, setBlendingComplete] = useState(false);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const viewShotRef = useRef(null);
-  console.log('scrollEnabled: ', scrollEnabled);
 
   const { pickImage } = useImageManipulation({
     setImage,
@@ -134,12 +130,20 @@ export default function HomeScreen() {
         scrollEnabled={scrollEnabled}
       >
         <View style={styles.content}>
+          <SwapResultAnnouncement
+            blendingComplete={blendingComplete}
+            error={error}
+          />
           <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.8 }}>
             <ThemedView style={styles.canvasContainer}>
               <ThemedView style={styles.canvas} {...panResponder.panHandlers}>
                 {image && !generatedImage && (
                   <>
-                    <Image source={{ uri: image }} style={styles.image} />
+                    <Image
+                      source={{ uri: image }}
+                      style={styles.image}
+                      resizeMode="contain"
+                    />
                     <Svg height="100%" width="100%" style={styles.absoluteFill}>
                       {enclosingShape && (
                         <Path
@@ -154,7 +158,8 @@ export default function HomeScreen() {
                 {generatedImage && (
                   <Image
                     source={{ uri: generatedImage }}
-                    style={styles.generatedImage}
+                    style={styles.image}
+                    resizeMode="contain"
                   />
                 )}
                 {isLoading && (
@@ -175,19 +180,16 @@ export default function HomeScreen() {
               </ThemedView>
             </ThemedView>
           </ViewShot>
-          {image && enclosingShape && (
-            <TouchableOpacity style={styles.undoButton} onPress={clearCanvas}>
-              <ThemedText style={styles.undoButtonText}>Clear</ThemedText>
-            </TouchableOpacity>
-          )}
-          {blendingComplete && (
-            <ThemedText style={styles.successText}>
-              Face swap complete! The result is visible in the image above.
-            </ThemedText>
-          )}
-          {error && (
-            <ThemedText style={styles.errorText}>Error: {error}</ThemedText>
-          )}
+          <View style={styles.clearButtonContainer}>
+            {image && enclosingShape && (
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={clearCanvas}
+              >
+                <ThemedText style={styles.clearButtonText}>Clear</ThemedText>
+              </TouchableOpacity>
+            )}
+          </View>
           <ThemedView style={styles.promptContainer}>
             <TouchableOpacity
               style={[
