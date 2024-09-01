@@ -3,7 +3,7 @@ import * as MediaLibrary from 'expo-media-library';
 import { Image } from 'react-native';
 import faceImage from '../../assets/face_image.jpg';
 
-export const useImageManipulation = ({ setImage, setIsLoading, setError }) => {
+export const useImageManipulation = ({ setIsLoading, setError }) => {
   const generateImageWithHuggingFace = async (
     prompt: string,
     enclosingShape: string
@@ -42,7 +42,6 @@ export const useImageManipulation = ({ setImage, setIsLoading, setError }) => {
       quality: 1,
     });
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
       return result.assets[0].uri; // Return the picked image URI
     }
     return null;

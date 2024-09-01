@@ -11,6 +11,7 @@ import {
 import { Svg, Path } from 'react-native-svg';
 import { Stack } from 'expo-router';
 import ViewShot from 'react-native-view-shot';
+import * as FileSystem from 'expo-file-system';
 
 import { SwapResultAnnouncement } from '@/components/SwapResultAnnouncement';
 import { saveImage, cleanupTemporaryFiles } from '@/utils';
@@ -20,6 +21,7 @@ import { sendFaceSwapRequest } from './sendApi';
 import { useImageManipulation } from './useImageManipulation';
 import { usePanResponder } from './usePanResponder';
 import { styles } from './styles';
+import { GREEN_HIGHLIGHT_COLOR } from './constants';
 
 export default function HomeScreen() {
   const [image, setImage] = useState(null);
@@ -33,7 +35,6 @@ export default function HomeScreen() {
   const viewShotRef = useRef(null);
 
   const { pickImage } = useImageManipulation({
-    setImage,
     setIsLoading,
     setError,
   });
@@ -41,7 +42,10 @@ export default function HomeScreen() {
   const saveOriginalImage = async () => {
     try {
       let uriToSave = await viewShotRef.current?.capture();
-      setOriginalImage(uriToSave);
+      const base64 = await FileSystem.readAsStringAsync(uriToSave, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      setOriginalImage(base64);
     } catch (error) {
       console.error('Error saving original image:', error);
     }
@@ -50,10 +54,10 @@ export default function HomeScreen() {
   const handlePickImage = async () => {
     const pickedImageUri = await pickImage();
     if (pickedImageUri) {
-      // Wait for the image to be rendered in the ViewShot
+      setImage(pickedImageUri);
       setTimeout(async () => {
         await saveOriginalImage();
-      }, 100); // Adjust this delay if needed
+      }, 100);
     }
   };
 
@@ -83,16 +87,17 @@ export default function HomeScreen() {
   };
 
   const handleFaceSwap = async () => {
-    if (image) {
+    if (originalImage) {
       setIsLoading(true);
       try {
-        // Recapture the current state of the image
         const capturedUri = await viewShotRef.current?.capture();
-
+        const capturedBase64 = await FileSystem.readAsStringAsync(capturedUri, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
         const faceSwappedImageUrl = await sendFaceSwapRequest(
-          capturedUri, // Pass the newly captured URI instead of viewShotRef
-          !enclosingShape,
-          originalImage || ''
+          capturedBase64,
+          GREEN_HIGHLIGHT_COLOR,
+          originalImage
         );
         if (faceSwappedImageUrl) {
           setGeneratedImage(faceSwappedImageUrl);
@@ -102,8 +107,8 @@ export default function HomeScreen() {
           setError('Failed to generate face-swapped image');
         }
       } catch (error) {
-        console.error('Error capturing image:', error);
-        setError('Failed to capture image');
+        console.error('Error in face swap process:', error);
+        setError('Failed to process image');
       } finally {
         setIsLoading(false);
       }
@@ -114,13 +119,19 @@ export default function HomeScreen() {
 
   const resetApp = () => {
     setImage(null);
+    setOriginalImage(null);
     setEnclosingShape('');
     setGeneratedImage(null);
-    setOriginalImage(null);
     setIsLoading(false);
     setError(null);
     setBlendingComplete(false);
   };
+
+  useEffect(() => {
+    if (error) {
+      clearCanvas();
+    }
+  }, [error]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -148,7 +159,7 @@ export default function HomeScreen() {
                       {enclosingShape && (
                         <Path
                           d={enclosingShape}
-                          fill="#00ff00"
+                          fill={GREEN_HIGHLIGHT_COLOR}
                           fillOpacity={0.3}
                         />
                       )}
