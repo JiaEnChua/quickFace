@@ -1,6 +1,5 @@
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
-import * as ImageManipulator from 'expo-image-manipulator';
 import { Image } from 'react-native';
 import faceImage from '../../assets/face_image.jpg';
 
