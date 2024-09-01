@@ -18,14 +18,14 @@ import { saveImage, cleanupTemporaryFiles } from '@/utils';
 import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { sendFaceSwapRequest } from './sendApi';
-import { useImageManipulation } from './useImageManipulation';
-import { usePanResponder } from './usePanResponder';
+import { usePanResponder } from '../../hooks/usePanResponder';
 import { styles } from './styles';
-import { GREEN_HIGHLIGHT_COLOR } from './constants';
+import { GREEN_HIGHLIGHT_COLOR } from '../../constants';
+import { pickImage } from '../../utils';
 
 export default function HomeScreen() {
-  const [image, setImage] = useState(null);
-  const [originalImage, setOriginalImage] = useState(null);
+  const [image, setImage] = useState<string | null>(null);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [enclosingShape, setEnclosingShape] = useState('');
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,29 +34,16 @@ export default function HomeScreen() {
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const viewShotRef = useRef(null);
 
-  const { pickImage } = useImageManipulation({
-    setIsLoading,
-    setError,
-  });
-
-  const saveOriginalImage = async () => {
-    try {
-      let uriToSave = await viewShotRef.current?.capture();
-      const base64 = await FileSystem.readAsStringAsync(uriToSave, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      setOriginalImage(base64);
-    } catch (error) {
-      console.error('Error saving original image:', error);
-    }
-  };
-
   const handlePickImage = async () => {
     const pickedImageUri = await pickImage();
     if (pickedImageUri) {
       setImage(pickedImageUri);
       setTimeout(async () => {
-        await saveOriginalImage();
+        let uriToSave = await viewShotRef.current?.capture();
+        const base64 = await FileSystem.readAsStringAsync(uriToSave, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        setOriginalImage(base64);
       }, 100);
     }
   };

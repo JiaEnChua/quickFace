@@ -1,5 +1,5 @@
 import { StyleSheet } from 'react-native';
-import { CANVAS_SIZE } from './constants';
+import { CANVAS_SIZE } from '../../constants';
 
 export const styles = StyleSheet.create({
   container: {

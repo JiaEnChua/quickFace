@@ -1,6 +1,6 @@
 import { Alert, Image } from 'react-native';
 import Constants from 'expo-constants';
-import { ACCEPTABLE_ERRORS } from './constants';
+import { ACCEPTABLE_ERRORS } from '../../constants';
 
 export const sendFaceSwapRequest = async (
   capturedBase64: string,
