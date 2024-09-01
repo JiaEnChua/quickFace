@@ -26,15 +26,11 @@ export const styles = StyleSheet.create({
   canvasContainer: {
     width: CANVAS_SIZE,
     height: CANVAS_SIZE,
-    marginBottom: 20,
     position: 'relative',
   },
   canvas: {
     width: '100%',
     height: '100%',
-    borderWidth: 2,
-    borderColor: '#ccc',
-    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -91,17 +87,6 @@ export const styles = StyleSheet.create({
   generateButtonTextDisabled: {
     color: '#d0d0d0', // A light grey color for disabled button text
   },
-  undoButton: {
-    backgroundColor: 'rgba(244, 67, 54, 0.8)',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-  },
-  undoButtonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
   loadingOverlay: {
     position: 'absolute',
     top: 0,
@@ -143,6 +128,7 @@ export const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 4,
+    marginTop: 5,
   },
   clearButtonText: {
     color: 'white',
