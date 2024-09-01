@@ -147,7 +147,7 @@ export default function HomeScreen() {
                         <Path
                           d={enclosingShape}
                           fill={GREEN_HIGHLIGHT_COLOR}
-                          fillOpacity={0.3}
+                          fillOpacity={1}
                         />
                       )}
                     </Svg>

@@ -104,14 +104,6 @@ export const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  greenScreen: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#00ff00', // Bright green color
-  },
   resetButton: {
     backgroundColor: '#d9534f', // A red color for the reset button
     marginTop: 10,
