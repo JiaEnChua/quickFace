@@ -2,13 +2,11 @@ import { Alert, Image } from 'react-native';
 import Constants from 'expo-constants';
 
 export const sendFaceSwapRequest = async (
-  viewShotRef: any,
+  capturedUri: string,
   noGreenMask: boolean,
   originalImage: string
 ) => {
   try {
-    const capturedUri = await viewShotRef.current.capture();
-
     const formData = new FormData();
     formData.append('face_image', {
       uri: Image.resolveAssetSource(require('../../assets/face_image.jpg')).uri,

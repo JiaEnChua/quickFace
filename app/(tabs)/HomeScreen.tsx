@@ -22,22 +22,7 @@ import { sendFaceSwapRequest } from './sendApi';
 import { useImageManipulation } from './useImageManipulation';
 import { usePanResponder } from './usePanResponder';
 import { styles } from './styles';
-
-async function cleanupTemporaryFiles() {
-  try {
-    const imageManipulatorDir = `${FileSystem.cacheDirectory}ImageManipulator`;
-    const dirInfo = await FileSystem.getInfoAsync(imageManipulatorDir);
-
-    if (dirInfo.exists && dirInfo.isDirectory) {
-      await FileSystem.deleteAsync(imageManipulatorDir, { idempotent: true });
-      console.log('Temporary ImageManipulator files cleaned up');
-    } else {
-      console.log('No ImageManipulator directory found');
-    }
-  } catch (error) {
-    console.error('Error cleaning up temporary files:', error);
-  }
-}
+import { saveImage, cleanupTemporaryFiles } from '@/utils';
 
 export default function HomeScreen() {
   const [image, setImage] = useState(null);
@@ -47,9 +32,9 @@ export default function HomeScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [blendingComplete, setBlendingComplete] = useState(false);
-  const pointsRef = useRef([]);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const viewShotRef = useRef(null);
+  console.log('scrollEnabled: ', scrollEnabled);
 
   const { pickImage } = useImageManipulation({
     setImage,
@@ -77,7 +62,6 @@ export default function HomeScreen() {
   };
 
   const { panResponder } = usePanResponder({
-    pointsRef,
     setEnclosingShape,
     setScrollEnabled,
   });
@@ -94,30 +78,24 @@ export default function HomeScreen() {
     };
   }, []);
 
-  useEffect(() => {
-    if (blendingComplete) {
-      Alert.alert(
-        'Success',
-        'Image blending complete. The result should now be visible.'
-      );
-    }
-  }, [blendingComplete, generatedImage]);
-
   const clearCanvas = () => {
     setEnclosingShape('');
     setGeneratedImage(null);
-    setOriginalImage(null);
-    pointsRef.current = [];
+    setError(null);
+    setBlendingComplete(false);
+    setIsLoading(false);
   };
 
   const handleFaceSwap = async () => {
     if (image) {
       setIsLoading(true);
       try {
-        const noGreenMask = !enclosingShape;
+        // Recapture the current state of the image
+        const capturedUri = await viewShotRef.current?.capture();
+
         const faceSwappedImageUrl = await sendFaceSwapRequest(
-          viewShotRef,
-          noGreenMask,
+          capturedUri, // Pass the newly captured URI instead of viewShotRef
+          !enclosingShape,
           originalImage || ''
         );
         if (faceSwappedImageUrl) {
@@ -146,32 +124,6 @@ export default function HomeScreen() {
     setIsLoading(false);
     setError(null);
     setBlendingComplete(false);
-    pointsRef.current = [];
-  };
-
-  const saveImage = async () => {
-    if (generatedImage || enclosingShape) {
-      try {
-        const { status } = await MediaLibrary.requestPermissionsAsync();
-        if (status === 'granted') {
-          let uriToSave =
-            generatedImage || (await viewShotRef.current?.capture());
-          const asset = await MediaLibrary.createAssetAsync(uriToSave);
-          await MediaLibrary.createAlbumAsync('QuickFace', asset, false);
-          Alert.alert('Success', 'Image saved to gallery');
-        } else {
-          Alert.alert(
-            'Permission required',
-            'Please allow access to save photos'
-          );
-        }
-      } catch (error) {
-        console.error('Error saving image:', error);
-        Alert.alert('Error', 'Failed to save image');
-      }
-    } else {
-      Alert.alert('No image', 'There is no edited image or drawing to save');
-    }
   };
 
   return (
@@ -223,7 +175,7 @@ export default function HomeScreen() {
               </ThemedView>
             </ThemedView>
           </ViewShot>
-          {enclosingShape && !generatedImage && (
+          {image && enclosingShape && (
             <TouchableOpacity style={styles.undoButton} onPress={clearCanvas}>
               <ThemedText style={styles.undoButtonText}>Clear</ThemedText>
             </TouchableOpacity>
@@ -258,23 +210,12 @@ export default function HomeScreen() {
               style={[
                 styles.generateButton,
                 styles.saveButton,
-                !generatedImage &&
-                  !enclosingShape &&
-                  !image &&
-                  styles.generateButtonDisabled,
+                !generatedImage && styles.generateButtonDisabled,
               ]}
-              onPress={saveImage}
-              disabled={!generatedImage && !enclosingShape && !image}
+              onPress={() => saveImage(generatedImage)}
+              disabled={!generatedImage}
             >
-              <ThemedText
-                style={[
-                  styles.generateButtonText,
-                  !generatedImage &&
-                    !enclosingShape &&
-                    !image &&
-                    styles.generateButtonTextDisabled,
-                ]}
-              >
+              <ThemedText style={[styles.generateButtonText]}>
                 Save Photo
               </ThemedText>
             </TouchableOpacity>
