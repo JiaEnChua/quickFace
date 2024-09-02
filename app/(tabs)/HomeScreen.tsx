@@ -179,7 +179,7 @@ export default function HomeScreen() {
             </ThemedView>
           </ViewShot>
           <View style={styles.clearButtonContainer}>
-            {image && enclosingShape && (
+            {(generatedImage || enclosingShape) && (
               <TouchableOpacity
                 style={styles.clearButton}
                 onPress={clearCanvas}
