@@ -7,11 +7,13 @@ import {
   ActivityIndicator,
   ScrollView,
   AppState,
+  TextInput,
 } from 'react-native';
 import { Svg, Path } from 'react-native-svg';
 import { Stack } from 'expo-router';
 import ViewShot from 'react-native-view-shot';
 import * as FileSystem from 'expo-file-system';
+import { sanitizeInput } from '@/utils';
 
 import { SwapResultAnnouncement } from '@/components/SwapResultAnnouncement';
 import { saveImage, cleanupTemporaryFiles } from '@/utils';
@@ -33,6 +35,7 @@ export default function HomeScreen() {
   const [blendingComplete, setBlendingComplete] = useState(false);
   const [scrollEnabled, setScrollEnabled] = useState(true);
   const viewShotRef = useRef(null);
+  const [imagePrompt, setImagePrompt] = useState('');
 
   const handlePickImage = async () => {
     const pickedImageUri = await pickImage();
@@ -81,10 +84,12 @@ export default function HomeScreen() {
         const capturedBase64 = await FileSystem.readAsStringAsync(capturedUri, {
           encoding: FileSystem.EncodingType.Base64,
         });
+        const sanitizedPrompt = sanitizeInput(imagePrompt);
         const faceSwappedImageUrl = await sendFaceSwapRequest(
           capturedBase64,
           GREEN_HIGHLIGHT_COLOR,
-          originalImage
+          originalImage,
+          sanitizedPrompt
         );
         if (faceSwappedImageUrl) {
           setGeneratedImage(faceSwappedImageUrl);
@@ -112,6 +117,7 @@ export default function HomeScreen() {
     setIsLoading(false);
     setError(null);
     setBlendingComplete(false);
+    setImagePrompt('');
   };
 
   useEffect(() => {
@@ -189,6 +195,13 @@ export default function HomeScreen() {
             )}
           </View>
           <ThemedView style={styles.promptContainer}>
+            <TextInput
+              style={styles.input}
+              onChangeText={setImagePrompt}
+              value={imagePrompt}
+              placeholder="Enter image prompt"
+              placeholderTextColor="#999"
+            />
             <TouchableOpacity
               style={[
                 styles.generateButton,

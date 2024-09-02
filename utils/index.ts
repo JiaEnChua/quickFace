@@ -55,3 +55,19 @@ export const cleanupTemporaryFiles = async () => {
     console.error('Error cleaning up temporary files:', error);
   }
 };
+
+export const sanitizeInput = (input: string): string => {
+  // Remove any HTML tags
+  let sanitized = input.replace(/<[^>]*>?/gm, '');
+
+  // Remove any special characters except spaces and alphanumeric characters
+  sanitized = sanitized.replace(/[^a-zA-Z0-9 ]/g, '');
+
+  // Trim whitespace from the beginning and end
+  sanitized = sanitized.trim();
+
+  // Limit the length to 100 characters
+  sanitized = sanitized.slice(0, 100);
+
+  return sanitized;
+};

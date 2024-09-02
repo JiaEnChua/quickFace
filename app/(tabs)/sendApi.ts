@@ -5,19 +5,15 @@ import { ACCEPTABLE_ERRORS } from '../../constants';
 export const sendFaceSwapRequest = async (
   capturedBase64: string,
   greenColorCode: string,
-  originalBase64: string
+  originalBase64: string,
+  imagePrompt: string
 ) => {
   try {
     const formData = new FormData();
-    formData.append('face_image', {
-      uri: Image.resolveAssetSource(require('../../assets/face_image.jpg')).uri,
-      type: 'image/jpeg',
-      name: 'face_image.jpg',
-    } as any);
-
     formData.append('input_image', capturedBase64);
     formData.append('original_input_image', originalBase64);
     formData.append('greenColorCode', greenColorCode);
+    formData.append('imagePrompt', imagePrompt);
 
     const apiUrl = Constants.expoConfig?.extra?.apiUrl;
     if (!apiUrl) throw new Error('API_URL is not defined in app config');
